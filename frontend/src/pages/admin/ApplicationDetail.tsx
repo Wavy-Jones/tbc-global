@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { applicationApi } from '../../api/client'
 import { LoanApplication } from '../../types'
 import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react'
 
 export function ApplicationDetail() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
 
   const [application, setApplication] = useState<LoanApplication | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Decision modal state
   const [showDecision, setShowDecision] = useState(false)
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null)
   const [approvedAmount, setApprovedAmount] = useState(0)
@@ -64,13 +62,13 @@ export function ApplicationDetail() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700" />
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700" />
     </div>
   )
 
   if (error || !application) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="text-center">
         <p className="text-red-500 mb-4">{error || 'Application not found'}</p>
         <Link to="/admin" className="btn-primary">Back to Dashboard</Link>
@@ -82,22 +80,21 @@ export function ApplicationDetail() {
 
   const StatusBar = () => {
     const configs: Record<string, { color: string; icon: JSX.Element; label: string }> = {
-      submitted: { color: 'bg-yellow-50 border-yellow-200 text-yellow-800', icon: <Clock size={18} />, label: 'Awaiting Review' },
-      under_review: { color: 'bg-blue-50 border-blue-200 text-blue-800', icon: <Clock size={18} />, label: 'Under Review' },
-      approved: { color: 'bg-green-50 border-green-200 text-green-800', icon: <CheckCircle size={18} />, label: 'Approved' },
-      rejected: { color: 'bg-red-50 border-red-200 text-red-800', icon: <XCircle size={18} />, label: 'Rejected' },
+      submitted:    { color: 'bg-yellow-50 border-yellow-200 text-yellow-800', icon: <Clock size={18} />,       label: 'Awaiting Review' },
+      under_review: { color: 'bg-green-50 border-green-300 text-green-800',    icon: <Clock size={18} />,       label: 'Under Review'   },
+      approved:     { color: 'bg-green-50 border-green-300 text-green-800',    icon: <CheckCircle size={18} />, label: 'Approved'       },
+      rejected:     { color: 'bg-red-50 border-red-200 text-red-800',          icon: <XCircle size={18} />,     label: 'Rejected'       },
     }
     const cfg = configs[application.status] || configs.submitted
     return (
-      <div className={`flex items-center gap-2 border rounded-xl px-4 py-3 ${cfg.color}`}>
-        {cfg.icon}
-        <span className="font-semibold">{cfg.label}</span>
+      <div className={`flex items-center gap-2 border rounded-xl px-4 py-3 font-semibold ${cfg.color}`}>
+        {cfg.icon} {cfg.label}
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
 
         {/* Back */}
@@ -118,45 +115,56 @@ export function ApplicationDetail() {
         {canReview && (
           <div className="flex gap-3 mb-6">
             {application.status === 'submitted' && (
-              <button onClick={setUnderReview} className="btn-secondary text-sm flex items-center gap-2">
+              <button onClick={setUnderReview}
+                className="btn-secondary text-sm flex items-center gap-2">
                 <Clock size={16} /> Mark Under Review
               </button>
             )}
-            <button onClick={() => { setDecision('approve'); setShowDecision(true) }}
+            <button
+              onClick={() => { setDecision('approve'); setShowDecision(true) }}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
               <CheckCircle size={18} /> Approve
             </button>
-            <button onClick={() => { setDecision('reject'); setShowDecision(true) }}
+            <button
+              onClick={() => { setDecision('reject'); setShowDecision(true) }}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
               <XCircle size={18} /> Reject
             </button>
           </div>
         )}
 
-        {/* Decision Result */}
+        {/* Decision Result Banners */}
         {application.status === 'approved' && application.approved_amount && (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mb-6">
-            <p className="font-bold text-green-800 mb-2 flex items-center gap-2"><CheckCircle size={18} /> Loan Approved</p>
-            <p className="text-green-700 text-sm">Approved Amount: <span className="font-bold text-lg">{formatCurrency(application.approved_amount)}</span></p>
+            <p className="font-bold text-green-800 mb-2 flex items-center gap-2">
+              <CheckCircle size={18} /> Loan Approved
+            </p>
+            <p className="text-green-700 text-sm">
+              Approved Amount: <span className="font-bold text-lg">{formatCurrency(application.approved_amount)}</span>
+            </p>
           </div>
         )}
         {application.status === 'rejected' && application.rejection_reason && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
-            <p className="font-bold text-red-800 mb-2 flex items-center gap-2"><XCircle size={18} /> Application Rejected</p>
+            <p className="font-bold text-red-800 mb-2 flex items-center gap-2">
+              <XCircle size={18} /> Application Rejected
+            </p>
             <p className="text-red-700 text-sm">Reason: {application.rejection_reason}</p>
           </div>
         )}
 
-        {/* Loan Details */}
+        {/* Cards */}
         <div className="space-y-4">
+
+          {/* Loan Details */}
           <div className="card border border-gray-200 shadow-sm">
             <h2 className="font-black text-gray-900 mb-4 text-lg">Loan Details</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: 'Requested Amount', value: formatCurrency(application.requested_amount) },
-                { label: 'Loan Term', value: `${application.loan_term_months} months` },
-                { label: 'Purpose', value: application.purpose || 'Not specified' },
-                { label: 'Interest Rate', value: application.interest_rate ? `${(application.interest_rate * 100).toFixed(0)}% p.a.` : '15% p.a.' },
+                { label: 'Loan Term',         value: `${application.loan_term_months} months` },
+                { label: 'Purpose',           value: application.purpose || 'Not specified' },
+                { label: 'Interest Rate',     value: application.interest_rate ? `${(application.interest_rate * 100).toFixed(0)}% p.a.` : '15% p.a.' },
               ].map(row => (
                 <div key={row.label} className="bg-gray-50 rounded-xl p-4">
                   <p className="text-gray-500 text-xs mb-1">{row.label}</p>
@@ -166,7 +174,7 @@ export function ApplicationDetail() {
             </div>
           </div>
 
-          {/* Affordability Assessment */}
+          {/* Affordability */}
           {application.affordability_score != null && (
             <div className="card border border-gray-200 shadow-sm">
               <h2 className="font-black text-gray-900 mb-4 text-lg">Affordability Assessment</h2>
@@ -186,7 +194,7 @@ export function ApplicationDetail() {
                 {[
                   { label: 'Monthly Payment', value: application.monthly_payment ? formatCurrency(application.monthly_payment) : '—' },
                   { label: 'Total Repayment', value: application.total_repayment ? formatCurrency(application.total_repayment) : '—' },
-                  { label: 'Total Interest', value: application.total_repayment && application.requested_amount ? formatCurrency(application.total_repayment - application.requested_amount) : '—' },
+                  { label: 'Total Interest',  value: application.total_repayment && application.requested_amount ? formatCurrency(application.total_repayment - application.requested_amount) : '—' },
                 ].map(row => (
                   <div key={row.label} className="bg-gray-50 rounded-xl p-3 text-center">
                     <p className="text-gray-400 text-xs mb-1">{row.label}</p>
@@ -197,17 +205,17 @@ export function ApplicationDetail() {
             </div>
           )}
 
-          {/* Application Timeline */}
+          {/* Timeline */}
           <div className="card border border-gray-200 shadow-sm">
             <h2 className="font-black text-gray-900 mb-4 text-lg">Timeline</h2>
             <div className="space-y-3">
               {[
-                { label: 'Application Created', date: application.created_at, done: true },
+                { label: 'Application Created',  date: application.created_at,   done: true },
                 { label: 'Application Submitted', date: application.submitted_at, done: !!application.submitted_at },
-                { label: 'Decision Made', date: application.updated_at, done: ['approved', 'rejected'].includes(application.status) },
+                { label: 'Decision Made',         date: application.updated_at,   done: ['approved', 'rejected'].includes(application.status) },
               ].map(event => (
                 <div key={event.label} className="flex items-start gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${event.done ? 'bg-blue-700' : 'bg-gray-200'}`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${event.done ? 'bg-green-700' : 'bg-gray-200'}`}>
                     <div className={`w-2 h-2 rounded-full ${event.done ? 'bg-white' : 'bg-gray-400'}`} />
                   </div>
                   <div>
@@ -218,6 +226,7 @@ export function ApplicationDetail() {
               ))}
             </div>
           </div>
+
         </div>
 
         {/* ===== DECISION MODAL ===== */}
@@ -243,14 +252,19 @@ export function ApplicationDetail() {
                 <div className="mb-5">
                   <label className="label">Approved Amount (R)</label>
                   <input type="number" className="input" min={500} max={5500}
-                    value={approvedAmount} onChange={e => setApprovedAmount(Number(e.target.value))} />
-                  <p className="text-xs text-gray-400 mt-1">Requested: {formatCurrency(application.requested_amount)}. Can approve less if needed.</p>
+                    value={approvedAmount}
+                    onChange={e => setApprovedAmount(Number(e.target.value))} />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Requested: {formatCurrency(application.requested_amount)}. Can approve less if needed.
+                  </p>
                 </div>
               ) : (
                 <div className="mb-5">
                   <label className="label">Rejection Reason</label>
-                  <textarea className="input min-h-[100px] resize-none" placeholder="e.g. Income does not meet minimum requirements..."
-                    value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} />
+                  <textarea className="input min-h-[100px] resize-none"
+                    placeholder="e.g. Income does not meet minimum requirements..."
+                    value={rejectionReason}
+                    onChange={e => setRejectionReason(e.target.value)} />
                 </div>
               )}
 

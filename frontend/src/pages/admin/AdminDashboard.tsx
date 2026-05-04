@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { dashboardApi, applicationApi } from '../../api/client'
 import { DashboardStats, LoanApplication } from '../../types'
-import { FileText, CheckCircle, XCircle, Clock, TrendingUp, Users, ArrowRight, Eye } from 'lucide-react'
+import { FileText, CheckCircle, Clock, TrendingUp, Eye } from 'lucide-react'
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
@@ -42,11 +42,10 @@ export function AdminDashboard() {
   }
 
   const filtered = filter === 'all' ? applications : applications.filter(a => a.status === filter)
-
   const pendingCount = applications.filter(a => ['submitted', 'under_review'].includes(a.status)).length
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* Header */}
@@ -54,7 +53,9 @@ export function AdminDashboard() {
           <h1 className="text-2xl font-black text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-500 mt-1">
             Manage loan applications and monitor platform performance
-            {pendingCount > 0 && <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingCount} need review</span>}
+            {pendingCount > 0 && (
+              <span className="ml-2 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingCount} need review</span>
+            )}
           </p>
         </div>
 
@@ -72,10 +73,10 @@ export function AdminDashboard() {
         ) : stats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Total Applications', value: stats.total_applications, icon: <FileText size={20} />, color: 'bg-blue-50 text-blue-700', sub: 'All time' },
+              { label: 'Total Applications', value: stats.total_applications, icon: <FileText size={20} />, color: 'bg-green-50 text-green-700', sub: 'All time' },
               { label: 'Pending Review', value: stats.pending_applications, icon: <Clock size={20} />, color: 'bg-yellow-50 text-yellow-700', sub: 'Awaiting decision' },
-              { label: 'Approved', value: stats.approved_applications, icon: <CheckCircle size={20} />, color: 'bg-green-50 text-green-700', sub: 'Total approved' },
-              { label: 'Active Loans', value: stats.active_loans, icon: <TrendingUp size={20} />, color: 'bg-purple-50 text-purple-700', sub: 'Currently active' },
+              { label: 'Approved', value: stats.approved_applications, icon: <CheckCircle size={20} />, color: 'bg-emerald-50 text-emerald-700', sub: 'Total approved' },
+              { label: 'Active Loans', value: stats.active_loans, icon: <TrendingUp size={20} />, color: 'bg-amber-50 text-amber-700', sub: 'Currently active' },
             ].map(stat => (
               <div key={stat.label} className="card border border-gray-100">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color} mb-3`}>{stat.icon}</div>
@@ -90,8 +91,8 @@ export function AdminDashboard() {
         {/* Financial Summary */}
         {stats && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-gradient-to-br from-[#1e3a5f] to-[#1e4976] text-white rounded-2xl p-5">
-              <p className="text-blue-300 text-xs font-medium uppercase tracking-wide mb-1">Total Disbursed</p>
+            <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-2xl p-5 shadow-md">
+              <p className="text-green-200 text-xs font-medium uppercase tracking-wide mb-1">Total Disbursed</p>
               <p className="text-3xl font-black">{formatCurrency(stats.total_disbursed)}</p>
             </div>
             <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-2xl p-5">
@@ -107,7 +108,6 @@ export function AdminDashboard() {
 
         {/* Applications Table */}
         <div className="card border border-gray-100 p-0 overflow-hidden">
-          {/* Table Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 border-b border-gray-100">
             <h2 className="text-lg font-black text-gray-900">Loan Applications</h2>
             <div className="flex gap-1 bg-gray-100 rounded-xl p-1 flex-wrap">
@@ -119,8 +119,8 @@ export function AdminDashboard() {
                 { key: 'rejected', label: 'Rejected' },
               ].map(f => (
                 <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === f.key ? 'bg-white shadow text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}>
-                  {f.label} {f.key === 'all' ? `(${applications.length})` : `(${applications.filter(a => a.status === f.key).length})`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === f.key ? 'bg-white shadow text-green-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                  {f.label} ({f.key === 'all' ? applications.length : applications.filter(a => a.status === f.key).length})
                 </button>
               ))}
             </div>
@@ -128,7 +128,7 @@ export function AdminDashboard() {
 
           {loading ? (
             <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-700 mx-auto" />
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-700 mx-auto" />
               <p className="text-gray-400 mt-4">Loading applications...</p>
             </div>
           ) : filtered.length === 0 ? (
@@ -141,14 +141,9 @@ export function AdminDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Application</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Term</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Score</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Submitted</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"></th>
+                    {['Application', 'Amount', 'Term', 'Monthly', 'Score', 'Status', 'Submitted', ''].map(h => (
+                      <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -176,7 +171,7 @@ export function AdminDashboard() {
                       <td className="px-6 py-4 text-gray-500 text-sm">{formatDate(app.submitted_at)}</td>
                       <td className="px-6 py-4">
                         <Link to={`/admin/applications/${app.id}`}
-                          className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-800 text-sm font-medium transition-colors">
+                          className="inline-flex items-center gap-1.5 text-green-700 hover:text-green-800 text-sm font-medium transition-colors">
                           <Eye size={14} /> Review
                         </Link>
                       </td>

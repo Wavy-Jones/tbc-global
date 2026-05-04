@@ -7,6 +7,7 @@ import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { CustomerDashboard } from './pages/customer/Dashboard'
 import { ApplyLoan } from './pages/customer/ApplyLoan'
+import { CompleteProfile } from './pages/customer/CompleteProfile'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { ApplicationDetail } from './pages/admin/ApplicationDetail'
 
@@ -28,6 +29,9 @@ function AppRoutes() {
         } />
         <Route path="/apply" element={
           <ProtectedRoute><ApplyLoan /></ProtectedRoute>
+        } />
+        <Route path="/profile/setup" element={
+          <ProtectedRoute><CompleteProfile /></ProtectedRoute>
         } />
 
         {/* Admin */}

@@ -121,13 +121,6 @@ def create_application(
             detail="Customer profile not found. Please complete your profile first."
         )
     
-    # Check KYC compliance
-    if not customer.kyc_verified or not customer.fica_compliant:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="KYC/FICA verification required before applying"
-        )
-    
     # Calculate affordability
     affordability = calculate_affordability(
         customer.monthly_income,

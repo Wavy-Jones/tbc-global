@@ -15,6 +15,7 @@ from app.core.security import (
     verify_password, get_password_hash,
     create_access_token, create_refresh_token, decode_token
 )
+from app.api.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -160,7 +161,3 @@ def get_current_user_info(db: Session = Depends(get_db), current_user: User = De
     Requires: Bearer token in Authorization header
     """
     return current_user
-
-
-# Import get_current_user at the end to avoid circular import
-from app.api.dependencies import get_current_user

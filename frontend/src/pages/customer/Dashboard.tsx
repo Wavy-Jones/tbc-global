@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { applicationApi, loanApi } from '../../api/client'
+import { applicationApi, loanApi, customerApi } from '../../api/client'
 import { LoanApplication, Loan } from '../../types'
-import { FileText, Plus, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { FileText, Plus, TrendingUp, Clock, AlertCircle, UserCheck } from 'lucide-react'
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    submitted: 'badge-pending', under_review: 'badge-review',
-    approved: 'badge-approved', rejected: 'badge-rejected',
+    submitted: 'badge-pending',
+    under_review: 'badge-review',
+    approved: 'badge-approved',
+    rejected: 'badge-rejected',
     draft: 'bg-gray-100 text-gray-600 text-xs px-2.5 py-0.5 rounded-full font-medium',
     cancelled: 'bg-gray-100 text-gray-500 text-xs px-2.5 py-0.5 rounded-full font-medium',
   }
@@ -36,16 +38,22 @@ export function CustomerDashboard() {
   const [applications, setApplications] = useState<LoanApplication[]>([])
   const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null)
   const [tab, setTab] = useState<'applications' | 'loans'>('applications')
 
   useEffect(() => {
-    Promise.all([
-      applicationApi.myApplications().catch(() => ({ data: [] })),
-      loanApi.myLoans().catch(() => ({ data: [] })),
-    ]).then(([appRes, loanRes]) => {
-      setApplications(appRes.data)
-      setLoans(loanRes.data)
-    }).finally(() => setLoading(false))
+    const loadData = async () => {
+      const [profileResult, appResult, loanResult] = await Promise.allSettled([
+        customerApi.getProfile(),
+        applicationApi.myApplications(),
+        loanApi.myLoans(),
+      ])
+      setHasProfile(profileResult.status === 'fulfilled' || profileResult.reason?.response?.status !== 404)
+      if (appResult.status === 'fulfilled') setApplications(appResult.value.data)
+      if (loanResult.status === 'fulfilled') setLoans(loanResult.value.data)
+      setLoading(false)
+    }
+    loadData()
   }, [])
 
   const formatCurrency = (amount: number) =>
@@ -60,7 +68,7 @@ export function CustomerDashboard() {
   const pendingApps = applications.filter(a => ['submitted', 'under_review'].includes(a.status))
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* Header */}
@@ -76,13 +84,37 @@ export function CustomerDashboard() {
           </Link>
         </div>
 
+        {/* Profile Required Banner */}
+        {hasProfile === false && (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-700 shrink-0">
+                <UserCheck size={22} />
+              </div>
+              <div>
+                <p className="font-bold text-amber-900">Profile setup required</p>
+                <p className="text-amber-700 text-sm">Complete your profile to apply for a loan — takes about 3 minutes.</p>
+              </div>
+            </div>
+            <Link to="/profile/setup"
+              className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm shadow-sm">
+              Complete Profile →
+            </Link>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Total Applications', value: applications.length, icon: <FileText size={20} />, color: 'bg-blue-50 text-blue-700' },
+            { label: 'Total Applications', value: applications.length, icon: <FileText size={20} />, color: 'bg-green-50 text-green-700' },
             { label: 'Pending Review', value: pendingApps.length, icon: <Clock size={20} />, color: 'bg-yellow-50 text-yellow-700' },
-            { label: 'Active Loans', value: activeLoans.length, icon: <TrendingUp size={20} />, color: 'bg-green-50 text-green-700' },
-            { label: 'Outstanding', value: activeLoans.length > 0 ? formatCurrency(activeLoans.reduce((sum, l) => sum + l.outstanding_balance, 0)) : 'R0', icon: <AlertCircle size={20} />, color: 'bg-purple-50 text-purple-700' },
+            { label: 'Active Loans', value: activeLoans.length, icon: <TrendingUp size={20} />, color: 'bg-emerald-50 text-emerald-700' },
+            {
+              label: 'Outstanding',
+              value: activeLoans.length > 0 ? formatCurrency(activeLoans.reduce((sum, l) => sum + l.outstanding_balance, 0)) : 'R0',
+              icon: <AlertCircle size={20} />,
+              color: 'bg-amber-50 text-amber-700'
+            },
           ].map(stat => (
             <div key={stat.label} className="card border border-gray-100">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color} mb-3`}>
@@ -96,20 +128,20 @@ export function CustomerDashboard() {
 
         {/* Active Loan Banner */}
         {activeLoans.length > 0 && (
-          <div className="bg-gradient-to-r from-[#1e3a5f] to-[#1e4976] text-white rounded-2xl p-6 mb-8">
+          <div className="bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-2xl p-6 mb-8 shadow-md">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <p className="text-blue-200 text-sm font-medium mb-1">Current Active Loan</p>
+                <p className="text-green-200 text-sm font-medium mb-1">Current Active Loan</p>
                 <p className="text-3xl font-black">{formatCurrency(activeLoans[0].outstanding_balance)}</p>
-                <p className="text-blue-200 text-sm mt-1">Outstanding Balance</p>
+                <p className="text-green-200 text-sm mt-1">Outstanding Balance</p>
               </div>
               <div className="grid grid-cols-2 gap-4 sm:gap-8">
                 <div>
-                  <p className="text-blue-300 text-xs">Monthly Payment</p>
+                  <p className="text-green-300 text-xs">Monthly Payment</p>
                   <p className="font-bold text-lg">{formatCurrency(activeLoans[0].monthly_payment)}</p>
                 </div>
                 <div>
-                  <p className="text-blue-300 text-xs">Loan Number</p>
+                  <p className="text-green-300 text-xs">Loan Number</p>
                   <p className="font-bold text-sm">{activeLoans[0].loan_number}</p>
                 </div>
               </div>
@@ -121,7 +153,7 @@ export function CustomerDashboard() {
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
           {(['applications', 'loans'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${tab === t ? 'bg-white shadow text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${tab === t ? 'bg-white shadow text-green-700' : 'text-gray-500 hover:text-gray-700'}`}>
               {t} ({t === 'applications' ? applications.length : loans.length})
             </button>
           ))}
@@ -130,7 +162,7 @@ export function CustomerDashboard() {
         {/* Content */}
         {loading ? (
           <div className="card border border-gray-100 text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-700 mx-auto" />
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-700 mx-auto" />
             <p className="text-gray-400 mt-4">Loading...</p>
           </div>
         ) : tab === 'applications' ? (
@@ -147,12 +179,9 @@ export function CustomerDashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Application</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Term</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                      {['Application', 'Amount', 'Term', 'Monthly', 'Status', 'Date'].map(h => (
+                        <th key={h} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -187,11 +216,9 @@ export function CustomerDashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Loan</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Principal</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Outstanding</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                      {['Loan', 'Principal', 'Monthly', 'Outstanding', 'Status'].map(h => (
+                        <th key={h} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -203,7 +230,7 @@ export function CustomerDashboard() {
                         </td>
                         <td className="px-6 py-4 font-semibold text-gray-900">{formatCurrency(loan.principal_amount)}</td>
                         <td className="px-6 py-4 text-gray-600 text-sm">{formatCurrency(loan.monthly_payment)}</td>
-                        <td className="px-6 py-4 font-semibold text-blue-700">{formatCurrency(loan.outstanding_balance)}</td>
+                        <td className="px-6 py-4 font-semibold text-green-700">{formatCurrency(loan.outstanding_balance)}</td>
                         <td className="px-6 py-4"><LoanStatusBadge status={loan.status} /></td>
                       </tr>
                     ))}
