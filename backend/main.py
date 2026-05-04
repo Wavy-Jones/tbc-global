@@ -52,7 +52,30 @@ async def startup_event():
     """Run on application startup"""
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"Debug mode: {settings.DEBUG}")
+
+    # Seed admin user if this is a fresh database
+    from app.db.database import SessionLocal
+    from app.models.models import User, UserRole
+    from app.core.security import get_password_hash
+    db = SessionLocal()
+    try:
+        if not db.query(User).filter(User.email == "admin@tbcglobal.co.za").first():
+            db.add(User(
+                email="admin@tbcglobal.co.za",
+                hashed_password=get_password_hash("Admin123!"),
+                full_name="Admin User",
+                phone_number="+27000000000",
+                role=UserRole.ADMIN,
+                is_active=True,
+                is_verified=True,
+            ))
+            db.commit()
+            logger.info("Admin user seeded")
+    except Exception as e:
+        logger.warning(f"Admin seed skipped: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 
 @app.on_event("shutdown")
