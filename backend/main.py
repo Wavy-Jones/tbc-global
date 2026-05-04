@@ -43,7 +43,7 @@ app.add_middleware(
 if not settings.DEBUG:
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.tbcglobal.co.za", "localhost"]
+        allowed_hosts=["*.tbcglobal.co.za", "*.vercel.app", "localhost"]
     )
 
 
