@@ -6,9 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
+from sqlalchemy.orm import joinedload
+
 from app.db.database import get_db
 from app.models.models import User, Customer
-from app.schemas.schemas import CustomerCreate, CustomerResponse, CustomerUpdate
+from app.schemas.schemas import CustomerCreate, CustomerResponse, CustomerUpdate, CustomerWithUserResponse
 from app.api.dependencies import get_current_user, get_current_customer, get_current_admin
 
 
@@ -103,7 +105,7 @@ def update_my_profile(
     return profile
 
 
-@router.get("/{customer_id}", response_model=CustomerResponse)
+@router.get("/{customer_id}", response_model=CustomerWithUserResponse)
 def get_customer_by_id(
     customer_id: int,
     db: Session = Depends(get_db),
@@ -112,17 +114,17 @@ def get_customer_by_id(
     """
     Get customer by ID (Admin only)
     """
-    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    customer = db.query(Customer).options(joinedload(Customer.user)).filter(Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Customer not found"
         )
-    
+
     return customer
 
 
-@router.get("/", response_model=List[CustomerResponse])
+@router.get("/", response_model=List[CustomerWithUserResponse])
 def list_customers(
     skip: int = 0,
     limit: int = 100,
@@ -131,9 +133,6 @@ def list_customers(
 ):
     """
     List all customers (Admin only)
-    
-    - **skip**: Number of records to skip
-    - **limit**: Maximum number of records to return
     """
-    customers = db.query(Customer).offset(skip).limit(limit).all()
+    customers = db.query(Customer).options(joinedload(Customer.user)).offset(skip).limit(limit).all()
     return customers

@@ -152,14 +152,14 @@ class CustomerResponse(BaseModel):
 # ==================== LOAN APPLICATION SCHEMAS ====================
 class LoanApplicationCreate(BaseModel):
     """Create loan application"""
-    requested_amount: float = Field(..., ge=500, le=5500, description="Between R500 and R5500")
+    requested_amount: float = Field(..., ge=100, le=5000, description="Between R100 and R5000")
     loan_term_months: int = Field(..., ge=1, le=24, description="Between 1 and 24 months")
     purpose: Optional[str] = Field(None, max_length=500)
 
 
 class LoanApplicationUpdate(BaseModel):
     """Update loan application"""
-    requested_amount: Optional[float] = Field(None, ge=500, le=5500)
+    requested_amount: Optional[float] = Field(None, ge=100, le=5000)
     loan_term_months: Optional[int] = Field(None, ge=1, le=24)
     purpose: Optional[str] = None
     status: Optional[ApplicationStatus] = None
@@ -267,3 +267,63 @@ class Message(BaseModel):
 class ErrorResponse(BaseModel):
     """Error response"""
     detail: str
+
+
+# ==================== ADMIN EXTENDED SCHEMAS ====================
+
+class UserBasicInfo(BaseModel):
+    id: int
+    email: str
+    full_name: str
+    phone_number: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CustomerWithUserResponse(BaseModel):
+    id: int
+    user_id: int
+    id_number: str
+    date_of_birth: datetime
+    gender: str
+    monthly_income: float
+    employer_name: str
+    employer_phone: Optional[str] = None
+    job_title: str
+    bank_name: str
+    account_type: Optional[str] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    province: Optional[str] = None
+    postal_code: Optional[str] = None
+    credit_score: Optional[int] = None
+    kyc_verified: bool
+    fica_compliant: bool
+    created_at: datetime
+    user: UserBasicInfo
+
+    class Config:
+        from_attributes = True
+
+
+class PaymentCreate(BaseModel):
+    amount: float = Field(..., gt=0, description="Payment amount in ZAR")
+    payment_method: str = Field(default="eft")
+    notes: Optional[str] = None
+
+
+class PaymentResponse(BaseModel):
+    id: int
+    payment_reference: str
+    loan_id: int
+    amount: float
+    payment_date: datetime
+    payment_method: Optional[str] = None
+    status: str
+    principal_amount: float
+    interest_amount: float
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

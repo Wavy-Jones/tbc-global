@@ -194,7 +194,7 @@ class LoanApplication(Base):
     documents = relationship("Document", back_populates="application")
     
     __table_args__ = (
-        CheckConstraint('requested_amount >= 500 AND requested_amount <= 5500', name='check_loan_amount'),
+        CheckConstraint('requested_amount >= 100 AND requested_amount <= 5000', name='check_loan_amount'),
         CheckConstraint('loan_term_months >= 1 AND loan_term_months <= 24', name='check_loan_term'),
         Index('idx_application_status', 'status'),
         Index('idx_application_customer', 'customer_id', 'status'),
