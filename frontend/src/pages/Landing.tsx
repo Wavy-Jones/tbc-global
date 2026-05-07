@@ -43,7 +43,7 @@ export function Landing() {
                   </span>
                 </h1>
                 <p className="text-xl sm:text-2xl text-gray-300 max-w-xl leading-relaxed">
-                  Get <span className="text-white font-bold">instant loans up to R5,500</span> delivered to your account in hours. 
+                  Get <span className="text-white font-bold">instant loans up to R5,000</span> delivered to your account in hours. 
                   No paperwork, no hassle, just results.
                 </p>
               </div>
@@ -70,7 +70,7 @@ export function Landing() {
               <div className="grid grid-cols-3 gap-6 pt-8">
                 {[
                   { icon: <Users className="text-green-400" size={24} />, value: '10,000+', label: 'Happy Customers' },
-                  { icon: <TrendingUp className="text-green-400" size={24} />, value: 'R5,500', label: 'Max Loan' },
+                  { icon: <TrendingUp className="text-green-400" size={24} />, value: 'R5,000', label: 'Max Loan' },
                   { icon: <Clock className="text-green-400" size={24} />, value: '< 24hrs', label: 'Payout' },
                 ].map((stat, i) => (
                   <div key={i} className="text-center space-y-2">
@@ -110,7 +110,7 @@ export function Landing() {
                   {/* Amount display */}
                   <div className="bg-gradient-to-br from-green-500/30 to-emerald-600/30 backdrop-blur-sm border border-green-400/50 rounded-2xl p-8 mb-6 shadow-xl">
                     <p className="text-gray-300 text-sm mb-2 uppercase tracking-wide">Available Credit</p>
-                    <p className="text-6xl font-black text-white mb-3">R5,500</p>
+                    <p className="text-6xl font-black text-white mb-3">R5,000</p>
                     <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       Ready to use • 2hr approval
@@ -316,7 +316,7 @@ export function Landing() {
             <div className="grid md:grid-cols-2 gap-8 text-left">
               <div>
                 <p className="text-green-400 font-semibold mb-3">Loan Amount</p>
-                <p className="text-5xl font-black mb-2">R2,000 - R5,500</p>
+                <p className="text-5xl font-black mb-2">R100 - R5,000</p>
                 <p className="text-gray-400 text-sm">Adjust to your needs</p>
               </div>
               <div>
@@ -381,7 +381,7 @@ export function Landing() {
                 {/* Pricing */}
                 <div className="bg-white rounded-2xl p-6 mb-8 shadow-md border border-green-100">
                   <p className="text-green-600 font-semibold text-sm mb-2">Loan Range</p>
-                  <p className="text-5xl font-black text-gray-900 mb-2">R500 - R5,500</p>
+                  <p className="text-5xl font-black text-gray-900 mb-2">R100 - R5,000</p>
                   <p className="text-gray-500 text-sm">Instant approval available</p>
                 </div>
 
@@ -433,7 +433,7 @@ export function Landing() {
 
                 <ul className="space-y-4 mb-8 flex-grow">
                   {[
-                    'From R50,000 minimum',
+                    'From R10,000 minimum',
                     '12-month fixed term',
                     'Monthly payouts',
                     'Transparent reporting',
@@ -477,7 +477,7 @@ export function Landing() {
 
                 <ul className="space-y-4 mb-8 flex-grow">
                   {[
-                    'From R100,000 minimum',
+                    'From R50,000 minimum',
                     'Fully managed by TBC',
                     'Regular distributions',
                     'Full transparency',
