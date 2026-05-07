@@ -251,7 +251,7 @@ export function ApplicationDetail() {
               {decision === 'approve' ? (
                 <div className="mb-5">
                   <label className="label">Approved Amount (R)</label>
-                  <input type="number" className="input" min={500} max={5500}
+                  <input type="number" className="input" min={100} max={5000}
                     value={approvedAmount}
                     onChange={e => setApprovedAmount(Number(e.target.value))} />
                   <p className="text-xs text-gray-400 mt-1">

@@ -12,7 +12,7 @@ const PURPOSES = [
 export function ApplyLoan() {
   const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [form, setForm] = useState({ requested_amount: 2000, loan_term_months: 6, purpose: '' })
+  const [form, setForm] = useState({ requested_amount: 1000, loan_term_months: 6, purpose: '' })
   const [affordability, setAffordability] = useState<AffordabilityResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -130,12 +130,12 @@ export function ApplyLoan() {
                   <label className="label mb-0">Loan Amount</label>
                   <span className="text-2xl font-black text-green-700">{formatCurrency(form.requested_amount)}</span>
                 </div>
-                <input type="range" min={500} max={5500} step={100}
+                <input type="range" min={100} max={5000} step={100}
                   value={form.requested_amount}
                   onChange={e => setForm(f => ({ ...f, requested_amount: Number(e.target.value) }))}
                   className="w-full h-2 bg-green-200 rounded-full appearance-none cursor-pointer accent-green-700" />
                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>R500</span><span>R5,500</span>
+                  <span>R100</span><span>R5,000</span>
                 </div>
               </div>
 

@@ -75,6 +75,11 @@ export const loanApi = {
   getById: (id: number) => api.get(`/loans/${id}`),
   listAll: (status?: string) =>
     api.get('/loans/', { params: status ? { status_filter: status } : {} }),
+  recordPayment: (id: number, data: { amount: number; payment_method: string }) =>
+    api.post(`/loans/${id}/payment`, data),
+  updateStatus: (id: number, newStatus: string) =>
+    api.put(`/loans/${id}/status`, null, { params: { new_status: newStatus } }),
+  getPayments: (id: number) => api.get(`/loans/${id}/payments`),
 }
 
 // ============ DASHBOARD ============

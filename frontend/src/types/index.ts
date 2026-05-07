@@ -100,6 +100,48 @@ export interface Loan {
   created_at: string
 }
 
+// ============ ADMIN EXTENDED TYPES ============
+export interface CustomerWithUser {
+  id: number
+  user_id: number
+  id_number: string
+  date_of_birth: string
+  gender: string
+  monthly_income: number
+  employer_name: string
+  employer_phone: string | null
+  job_title: string
+  bank_name: string
+  account_type: string | null
+  street_address: string | null
+  city: string | null
+  province: string | null
+  postal_code: string | null
+  credit_score: number | null
+  kyc_verified: boolean
+  fica_compliant: boolean
+  created_at: string
+  user: {
+    id: number
+    email: string
+    full_name: string
+    phone_number: string | null
+  }
+}
+
+export interface Payment {
+  id: number
+  payment_reference: string
+  loan_id: number
+  amount: number
+  payment_date: string
+  payment_method: string | null
+  status: string
+  principal_amount: number
+  interest_amount: number
+  created_at: string
+}
+
 // ============ DASHBOARD TYPES ============
 export interface DashboardStats {
   total_applications: number
